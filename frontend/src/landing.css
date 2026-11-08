@@ -1,0 +1,1639 @@
+/* Public pages (landing page and Explore gigs).
+   Full-width layout that keeps the login page's look: same colours, fonts and moving blue background.
+   Every rule uses these pages' own class names, so the login, register and logged-in pages are unchanged. */
+
+.landing {
+  position: relative;
+  min-height: 100vh;
+  overflow-x: clip;
+}
+
+/* Links styled as buttons keep their button colours on hover */
+.landing a.btn,
+.landing a.btn:hover,
+.land-top a.btn,
+.land-top a.btn:hover {
+  color: #fff;
+  text-decoration: none;
+}
+.landing a.btn-ghost,
+.landing a.btn-ghost:hover,
+.land-top a.btn-ghost,
+.land-top a.btn-ghost:hover {
+  color: var(--fg);
+}
+
+/* Login and register: the top bar sits above the centred card */
+.auth-shell {
+  position: relative;
+  min-height: 100vh;
+}
+
+.auth-shell .auth-page {
+  min-height: calc(100svh - 66px);
+  padding: 12px 16px;
+}
+
+/* Roomy by default; only tightens step by step on shorter screens so the form never needs to scroll */
+@media (min-width: 821px) {
+  .auth-shell .auth-story,
+  .auth-shell .auth-form {
+    padding: 44px clamp(28px, 4.5vw, 56px) 40px;
+    gap: 22px;
+  }
+
+  .auth-shell .form-stack {
+    gap: 16px;
+  }
+
+  .auth-shell .field-wrap {
+    gap: 8px;
+  }
+
+  .auth-shell .field {
+    min-height: 48px;
+  }
+
+  .auth-shell .seg-link {
+    min-height: 44px;
+  }
+
+  .auth-shell .role-card {
+    padding: 12px;
+  }
+
+  .auth-shell .btn-block {
+    min-height: 50px;
+  }
+
+  .auth-shell .feature-list li {
+    padding: 16px 10px;
+  }
+}
+
+@media (min-width: 821px) and (max-height: 940px) {
+  .auth-shell .auth-story,
+  .auth-shell .auth-form {
+    padding: 34px clamp(26px, 4vw, 52px) 30px;
+    gap: 18px;
+  }
+
+  .auth-shell .form-stack {
+    gap: 14px;
+  }
+
+  .auth-shell .field {
+    min-height: 46px;
+  }
+
+  .auth-shell .seg-link {
+    min-height: 42px;
+  }
+
+  .auth-shell .role-card {
+    padding: 10px 12px;
+  }
+
+  .auth-shell .btn-block {
+    min-height: 48px;
+  }
+
+  .auth-shell .feature-list li {
+    padding: 14px 10px;
+  }
+}
+
+@media (min-width: 821px) and (max-height: 860px) {
+  .auth-shell .auth-story,
+  .auth-shell .auth-form {
+    padding: 28px clamp(24px, 4vw, 48px) 24px;
+    gap: 16px;
+  }
+
+  .auth-shell .form-stack {
+    gap: 13px;
+  }
+
+  .auth-shell .field-wrap {
+    gap: 7px;
+  }
+
+  .auth-shell .field {
+    min-height: 46px;
+  }
+
+  .auth-shell .seg-link {
+    min-height: 42px;
+  }
+
+  .auth-shell .btn-block {
+    min-height: 48px;
+  }
+
+  .auth-shell .role-icon {
+    width: 34px;
+    height: 34px;
+  }
+
+  .auth-shell .auth-headline {
+    font-size: clamp(30px, 3.4vw, 44px);
+  }
+
+  .auth-shell .feature-list li {
+    padding: 12px 10px;
+  }
+}
+
+/* Short screens: drop the extra lines of small print */
+@media (min-width: 821px) and (max-height: 800px) {
+  .auth-shell .form-heading p,
+  .auth-shell .role-text small {
+    display: none;
+  }
+
+  .auth-shell .form-stack {
+    gap: 11px;
+  }
+
+  .auth-shell .field {
+    min-height: 42px;
+  }
+
+  .auth-shell .seg-link {
+    min-height: 38px;
+  }
+
+  .auth-shell .role-card {
+    padding: 8px 10px;
+  }
+
+  .auth-shell .btn-block {
+    min-height: 44px;
+  }
+
+  .auth-shell .auth-headline {
+    font-size: clamp(28px, 3.2vw, 40px);
+  }
+
+  .auth-shell .feature-list li {
+    padding: 10px;
+  }
+}
+
+@media (min-width: 821px) and (max-height: 740px) {
+  .auth-shell .auth-story,
+  .auth-shell .auth-form {
+    padding-block: 18px 16px;
+    gap: 10px;
+  }
+
+  .auth-shell .form-stack {
+    gap: 8px;
+  }
+
+  .auth-shell .field-wrap {
+    gap: 4px;
+  }
+
+  .auth-shell .field {
+    min-height: 40px;
+  }
+
+  .auth-shell .feature-list small {
+    display: none;
+  }
+}
+
+@media (min-width: 821px) and (max-height: 680px) {
+  .auth-shell .auth-story-copy p,
+  .auth-shell .check-text {
+    display: none;
+  }
+
+  .auth-shell .seg-link {
+    min-height: 34px;
+  }
+
+  .auth-shell .role-card {
+    padding: 6px 10px;
+  }
+
+  .auth-shell .btn-block {
+    min-height: 42px;
+  }
+}
+
+/* ---- Layout tokens ---- */
+.lp {
+  --gutter: clamp(20px, 5vw, 72px);
+  --max: 1360px;
+  /* Side padding that keeps content inside --max on wide screens */
+  --inline: max(var(--gutter), calc((100vw - var(--max)) / 2));
+  position: relative;
+  z-index: 1;
+}
+
+.lp-wrap {
+  padding-inline: var(--inline);
+}
+
+/* ---- Top bar ---- */
+.land-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  /* Fixed height so the bar is identical on every public page */
+  height: 66px;
+  padding: 0 clamp(20px, 5vw, 72px);
+  background: rgba(7, 7, 9, 0.6);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.pub-brand,
+.pub-brand:hover {
+  text-decoration: none;
+}
+
+.pub-nav {
+  display: flex;
+  gap: 4px;
+  margin-left: 12px;
+}
+
+.land-top .pub-link {
+  min-height: 38px;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 10px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.land-top .pub-link:hover {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.land-top .pub-link.active {
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.land-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+/* ---- Shared type ---- */
+.lp-display {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(48px, 8vw, 116px);
+  line-height: 0.96;
+  letter-spacing: -0.05em;
+}
+
+/* Each headline line is its own block so the rotating word never floats up or leaves a gap */
+.lp-display-line {
+  display: block;
+}
+
+.lp-display .rotator {
+  display: grid;
+  justify-items: center;
+  vertical-align: baseline;
+}
+
+.lp-display--md {
+  font-size: clamp(40px, 5.6vw, 76px);
+}
+
+.lp-h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(28px, 3.4vw, 46px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.lp-h2--wide {
+  max-width: 24ch;
+}
+
+.lp-h3 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(20px, 2vw, 26px);
+  letter-spacing: -0.02em;
+}
+
+.lp-h3-count {
+  margin-left: 8px;
+  font-family: var(--body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--dim);
+}
+
+.lp-lede {
+  font-size: clamp(16px, 1.3vw, 18px);
+  line-height: 1.65;
+  color: var(--soft);
+  max-width: 62ch;
+}
+
+.lp-sub {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 56ch;
+}
+
+.landing .lp-textlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--cyan);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.landing .lp-textlink:hover {
+  color: var(--cyan-soft);
+}
+
+.lp-textlink svg {
+  transition: transform 0.2s;
+}
+
+.lp-textlink:hover svg {
+  transform: translateX(3px);
+}
+
+/* ---- Hero: type straight over the moving background ---- */
+.lp-hero {
+  position: relative;
+  min-height: calc(100svh - 66px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: clamp(32px, 6vh, 64px);
+  padding-block: clamp(48px, 8vh, 96px) 0;
+  /* Darkens the fluid behind the text so it stays readable */
+  background:
+    radial-gradient(70% 70% at 50% 45%, rgba(7, 7, 9, 0.8), rgba(7, 7, 9, 0.35) 75%),
+    linear-gradient(180deg, transparent 60%, var(--bg));
+}
+
+.lp-hero--compact {
+  min-height: 0;
+  padding-block: clamp(48px, 8vh, 88px) clamp(32px, 5vh, 56px);
+}
+
+.lp-hero-copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 26px;
+  animation: lp-in 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes lp-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+
+.lp-search {
+  width: 100%;
+  max-width: 640px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 20px;
+  border-radius: 16px;
+  border: 1px solid var(--line-strong);
+  background: rgba(11, 11, 13, 0.85);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.lp-search:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.25);
+}
+
+.lp-search input {
+  flex: 1;
+  min-width: 0;
+  min-height: 52px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font-family: var(--body);
+  font-size: 16px;
+  outline: none;
+}
+
+.lp-search input::placeholder {
+  color: var(--faint);
+}
+
+.lp-search-icon {
+  display: flex;
+  color: var(--dim);
+}
+
+.lp-hero-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.lp-hero-ctas .btn {
+  min-height: 50px;
+  padding: 0 26px;
+}
+
+/* Facts along the bottom of the hero */
+.lp-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lp-stats div {
+  display: flex;
+  flex-direction: column-reverse;
+  align-items: center;
+  gap: 4px;
+  padding: 24px 24px 28px;
+  text-align: center;
+}
+
+.lp-stats div + div {
+  padding-left: 24px;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.lp-stats dt {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.lp-stats dd {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(26px, 2.6vw, 36px);
+  letter-spacing: -0.02em;
+  color: var(--fg);
+}
+
+/* ---- Bands: full-width sections on solid background ---- */
+.lp-band {
+  background: var(--bg);
+  padding-block: clamp(64px, 10vh, 120px);
+}
+
+.lp-band--tight {
+  padding-block: clamp(40px, 6vh, 72px);
+}
+
+.lp-band--raised {
+  background: var(--surface);
+  border-block: 1px solid var(--line-soft);
+}
+
+/* ---- Carousel ---- */
+.lp-rows {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(40px, 6vh, 64px);
+}
+
+.lp-carousel {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.lp-carousel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.lp-carousel-title {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.lp-carousel-tools {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-carousel-tools .lp-textlink {
+  margin-right: 10px;
+}
+
+.lp-arrow {
+  width: 46px;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  color: var(--fg);
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.lp-arrow:hover:not([disabled]) {
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.lp-arrow[disabled] {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* The track runs edge to edge; its padding lines the first card up with the content above */
+.lp-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: clamp(270px, 24vw, 340px);
+  gap: 20px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  scroll-padding-inline: var(--inline);
+  /* Extra space below so the hover glow is not cut off */
+  padding: 12px var(--inline) 48px;
+  margin-bottom: -32px;
+  scrollbar-width: none;
+  perspective: 1200px;
+}
+
+.lp-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* While dragging with the mouse: no snapping fighting the drag, no text selection */
+.lp-track.is-dragging {
+  scroll-snap-type: none;
+  cursor: grabbing;
+  user-select: none;
+}
+
+.lp-track.is-dragging .gig {
+  pointer-events: none;
+}
+
+.lp-slide {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.lp-slide > .gig {
+  width: 100%;
+}
+
+.landing .gig {
+  background: var(--surface);
+}
+
+.landing .gig .cover {
+  height: 120px;
+}
+
+.landing .gig:hover {
+  box-shadow: 0 24px 50px -28px rgba(37, 99, 235, 0.8);
+}
+
+/* ---- For clients / for freelancers: alternating full-width rows with a preview ---- */
+.lp-split {
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-half {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: clamp(32px, 6vw, 96px);
+  padding: clamp(64px, 10vh, 112px) var(--inline);
+  border-top: 1px solid var(--line-soft);
+}
+
+.lp-half--clients {
+  background: var(--bg);
+}
+
+.lp-half--freelancers {
+  background:
+    radial-gradient(70% 90% at 0% 50%, rgba(56, 189, 248, 0.14), transparent 60%),
+    linear-gradient(160deg, rgba(37, 99, 235, 0.2), rgba(37, 99, 235, 0.05));
+}
+
+/* Freelancers row puts the preview on the left */
+.lp-half--freelancers .lp-mock {
+  order: -1;
+  justify-self: start;
+}
+
+.lp-half-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.lp-for {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--cyan);
+}
+
+.lp-half ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 6px 0 10px;
+}
+
+.lp-half li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: var(--soft);
+}
+
+.lp-tick {
+  width: 22px;
+  height: 22px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--green-tint);
+  color: var(--green);
+}
+
+/* Preview cards (example receipt and example income) */
+.lp-mock {
+  justify-self: end;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  border-radius: 24px;
+  border: 1px solid var(--line-strong);
+  background: linear-gradient(160deg, rgba(27, 26, 30, 0.96), rgba(11, 11, 13, 0.96));
+  box-shadow:
+    0 40px 90px -40px rgba(37, 99, 235, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+}
+
+.lp-mock-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 18px;
+  border-bottom: 1px dashed var(--line-strong);
+}
+
+.lp-mock-badge {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: var(--blue);
+  color: #fff;
+}
+
+.lp-mock-meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.lp-mock-meta strong {
+  font-size: 16px;
+}
+
+.lp-mock-meta small {
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.lp-mock-paid {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: var(--green-tint);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lp-mock-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 18px 0;
+}
+
+.lp-mock-lines div {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 15px;
+}
+
+.lp-mock-lines dt {
+  color: var(--muted);
+}
+
+.lp-mock-lines dd {
+  font-weight: 600;
+  text-align: right;
+}
+
+.lp-mock-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.lp-mock-total span:last-child {
+  font-family: var(--mono);
+  color: var(--cyan);
+}
+
+.lp-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  height: 130px;
+  padding-top: 20px;
+}
+
+.lp-bar {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.lp-bar > span {
+  width: 100%;
+  border-radius: 6px 6px 2px 2px;
+  background: var(--line-strong);
+}
+
+.lp-bar > span.on {
+  background: linear-gradient(180deg, var(--cyan), var(--blue));
+}
+
+.lp-bar small {
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.lp-half--freelancers .lp-mock-lines {
+  padding-bottom: 0;
+  margin-top: 18px;
+  border-top: 1px dashed var(--line-strong);
+}
+
+.lp-half--freelancers .lp-mock-lines div:last-child dd {
+  font-family: var(--mono);
+  color: var(--cyan);
+}
+
+/* ---- How it works ---- */
+.lp-steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 48px);
+  margin-top: clamp(32px, 5vh, 56px);
+  counter-reset: step;
+}
+
+.lp-steps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 28px;
+  border-top: 2px solid var(--line);
+}
+
+/* The blue segment shows progress through the steps */
+.lp-steps li::before {
+  content: "";
+  position: absolute;
+  top: -2px;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+.lp-steps li:nth-child(1)::before {
+  width: 33%;
+}
+.lp-steps li:nth-child(2)::before {
+  width: 66%;
+}
+.lp-steps li:nth-child(3)::before {
+  width: 100%;
+}
+
+.lp-step-no {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: transparent;
+  -webkit-text-stroke: 1.5px var(--line-strong);
+}
+
+.lp-steps strong {
+  font-size: 20px;
+}
+
+.lp-steps p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 36ch;
+}
+
+/* ---- Why HustleHub+ ---- */
+.lp-features {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(24px, 3vw, 40px);
+  margin-top: clamp(32px, 5vh, 56px);
+}
+
+.lp-feature {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-feat-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  background: var(--blue-tint);
+  border: 1px solid rgba(37, 99, 235, 0.4);
+  color: var(--cyan-soft);
+}
+
+.lp-feat-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.lp-feature strong {
+  font-size: 18px;
+}
+
+.lp-feature p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+/* ---- Categories ---- */
+.lp-cats {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: clamp(32px, 5vh, 56px);
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.lp-cats li {
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.landing .lp-cat {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 28px 24px 32px;
+  color: var(--fg);
+  transition: background 0.25s;
+}
+
+.landing .lp-cat:hover {
+  color: var(--fg);
+}
+
+.lp-cat-name {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: clamp(18px, 1.6vw, 22px);
+  letter-spacing: -0.01em;
+  padding-right: 28px;
+}
+
+.lp-cat-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--dim);
+}
+
+.lp-cat-arrow {
+  position: absolute;
+  top: 30px;
+  right: 22px;
+  color: var(--dim);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.lp-cat:hover .lp-cat-arrow {
+  color: var(--cyan);
+  transform: translateX(3px);
+}
+
+/* ---- Final call to action: dark card, running light, spotlight ---- */
+.lp-final {
+  padding-block: clamp(56px, 10vh, 112px);
+  background: var(--bg);
+}
+
+.lp-final-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) auto;
+  align-items: center;
+  gap: 32px 64px;
+  padding: clamp(32px, 5vw, 72px);
+  border-radius: 32px;
+  border: 1px solid var(--line);
+  background: #111114;
+}
+
+/* A short streak of light that keeps running around the card's border */
+@property --beam {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.lp-final-card::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: conic-gradient(
+    from var(--beam),
+    transparent 0deg 300deg,
+    rgba(37, 99, 235, 0.9) 335deg,
+    var(--cyan) 355deg,
+    transparent 360deg
+  );
+  -webkit-mask:
+    linear-gradient(#000 0 0) content-box,
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  animation: lp-beam 6s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes lp-beam {
+  to {
+    --beam: 360deg;
+  }
+}
+
+.lp-final-copy,
+.lp-final-ctas {
+  position: relative;
+  z-index: 2;
+}
+
+.lp-final-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.lp-final-title {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(36px, 5vw, 72px);
+  line-height: 1;
+  letter-spacing: -0.045em;
+  max-width: 14ch;
+}
+
+.lp-final-text {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--muted);
+  max-width: 52ch;
+}
+
+.lp-final-points {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+.lp-final-points li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--soft);
+}
+
+.lp-final-tick {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--green-tint);
+  color: var(--green);
+}
+
+.lp-final-ctas {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 250px;
+}
+
+.lp-final .btn {
+  min-height: 54px;
+  padding: 0 28px;
+  font-size: 16px;
+}
+
+/* ---- Spotlight hover (based on React Bits' SpotlightCard) ---- */
+.spot {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  --spotlight-color: rgba(56, 189, 248, 0.2);
+}
+
+.spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), var(--spotlight-color), transparent 80%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.spot:hover::before,
+.spot:focus-within::before,
+.spot:focus-visible::before {
+  opacity: 0.6;
+}
+
+.lp-final-card.spot {
+  --spotlight-color: rgba(56, 189, 248, 0.16);
+  overflow: visible;
+}
+
+/* The final card keeps its glow inside the rounded corners without clipping the running light */
+.lp-final-card.spot::before {
+  inset: 0;
+}
+
+/* ---- Footer ---- */
+.lp-footer {
+  background: var(--bg);
+  border-top: 1px solid var(--line-soft);
+}
+
+.lp-footer-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(2, minmax(0, 1fr));
+  gap: 32px;
+  padding-block: 48px 36px;
+}
+
+.lp-footer-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.lp-footer-brand p {
+  max-width: 36ch;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--dim);
+}
+
+.lp-footer nav {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lp-footer nav strong {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.landing .lp-footer nav a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.landing .lp-footer nav a:hover {
+  color: var(--fg);
+}
+
+.lp-footer-base {
+  padding-block: 18px 28px;
+  border-top: 1px solid var(--line-soft);
+  font-size: 13px;
+  color: var(--dim);
+}
+
+/* ---- Explore page ---- */
+.lp-explore-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 560px);
+  align-items: end;
+  gap: 24px 48px;
+}
+
+.lp-explore-hero > div {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Filter bar sticks under the top bar while scrolling */
+.lp-filterbar {
+  position: sticky;
+  top: 66px;
+  z-index: 15;
+  background: rgba(11, 11, 13, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-block: 1px solid var(--line-soft);
+}
+
+.lp-filter-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  padding-block: 12px;
+}
+
+.lp-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+}
+
+.lp-chips::-webkit-scrollbar {
+  display: none;
+}
+
+.lp-chips .chip {
+  flex: none;
+}
+
+.lp-sort {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.lp-sort label {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.lp-sort .field {
+  width: auto;
+  min-height: 40px;
+  background: var(--surface);
+}
+
+.lp-results-tools {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.lp-results-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
+.lp-count {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ---- Log in / register prompt when a gig is opened ---- */
+.gate-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: gate-fade 0.2s ease-out both;
+}
+
+@keyframes gate-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.gate {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: calc(100vh - 32px);
+  overflow-y: auto;
+  padding: 32px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 24px;
+  background: rgba(11, 11, 13, 0.98);
+  box-shadow: 0 40px 100px -30px rgba(37, 99, 235, 0.45);
+  animation: card-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.gate h2 {
+  font-family: var(--display);
+  font-size: 24px;
+  letter-spacing: -0.01em;
+}
+
+.gate-sub {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.gate-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--dim);
+  cursor: pointer;
+}
+
+.gate-close:hover {
+  background: var(--raised);
+  color: var(--fg);
+}
+
+.gate-lock {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: var(--blue);
+  color: #fff;
+}
+
+.gate-gig {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 6px 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.gate-cat {
+  align-self: flex-start;
+  padding: 4px 9px;
+  border-radius: 6px;
+  background: var(--blue-tint);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.gate-gig strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.gate-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.gate-owner,
+.gate-days {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gate-days svg {
+  width: 16px;
+  height: 16px;
+}
+
+.gate .avatar.sm {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  background: var(--line);
+  font-size: 11px;
+}
+
+.gate-price {
+  margin-left: auto;
+  font-size: 18px;
+  color: var(--fg);
+}
+
+.gate-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.gate-actions .btn-block {
+  margin-top: 0;
+}
+
+/* ---- Rotating headline word ---- */
+/* Every word shares one grid cell, so the headline never changes width */
+.rotator {
+  display: inline-grid;
+  vertical-align: bottom;
+}
+
+.rotator > span {
+  grid-area: 1 / 1;
+  color: var(--blue);
+  opacity: 0;
+  transform: translateY(0.45em);
+  filter: blur(6px);
+  /* Waiting words snap back below the line instantly (they are invisible), so nothing drifts through the middle */
+  transition: none;
+}
+
+/* The full stop after the word stays plain white, like the rest of the headline */
+.rotator-suffix {
+  -webkit-text-fill-color: var(--fg);
+}
+
+/* Incoming word: waits until the old word has gone, then rises in with a soft ease-out */
+.rotator > span.on {
+  opacity: 1;
+  transform: none;
+  filter: none;
+  transition:
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.3s,
+    opacity 0.7s ease-out 0.3s,
+    filter 0.7s ease-out 0.3s;
+}
+
+/* Outgoing word: fades out fast (0.3s) and drifts up, so it is gone before the new word appears */
+.rotator > span.off {
+  opacity: 0;
+  transform: translateY(-0.45em);
+  filter: blur(6px);
+  transition:
+    transform 0.45s cubic-bezier(0.4, 0, 1, 1),
+    opacity 0.3s ease-out,
+    filter 0.3s ease-out;
+}
+
+/* ---- Smaller screens ---- */
+@media (max-width: 1100px) {
+  .lp-features,
+  .lp-cats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .lp-hero {
+    min-height: 0;
+  }
+
+  .lp-explore-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-final-card {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lp-footer-brand {
+    grid-column: 1 / -1;
+  }
+
+  .lp-stats div {
+    padding-inline: 8px;
+  }
+
+  .lp-stats div + div {
+    padding-left: 8px;
+  }
+
+  .lp-half {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lp-half .lp-mock,
+  .lp-half--freelancers .lp-mock {
+    order: 0;
+    justify-self: center;
+    transform: none;
+  }
+
+  .lp-steps {
+    grid-template-columns: 1fr;
+  }
+
+  .pub-nav .pub-link:first-child {
+    display: none;
+  }
+
+  .lp-filter-inner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  /* On small screens the categories scroll sideways in one line */
+  .lp-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .lp-chips::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .land-top {
+    gap: 8px;
+    padding-inline: 16px;
+  }
+
+  .land-top .btn-sm {
+    padding: 0 12px;
+  }
+
+  .pub-nav {
+    margin-left: 0;
+  }
+
+  .land-top .brand-name,
+  .land-actions .btn-ghost {
+    display: none;
+  }
+
+  .lp-features,
+  .lp-cats {
+    grid-template-columns: 1fr;
+  }
+
+
+  .lp-track {
+    grid-auto-columns: 80%;
+    gap: 14px;
+  }
+
+  .lp-carousel-tools .lp-arrow {
+    width: 40px;
+    height: 40px;
+  }
+
+  .lp-final-ctas {
+    width: 100%;
+    min-width: 0;
+  }
+
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-hero-copy,
+  .gate,
+  .gate-backdrop {
+    animation: none;
+  }
+
+  .rotator > span {
+    transition: none;
+  }
+
+  .lp-final-card::after {
+    animation: none;
+    display: none;
+  }
+}

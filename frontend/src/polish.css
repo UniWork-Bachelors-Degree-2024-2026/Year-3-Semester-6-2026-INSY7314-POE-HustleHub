@@ -1,0 +1,469 @@
+/*MDN Web Docs (2026a) documents focus rings for keyboard users which assisted this implementation.*/
+/*MDN Web Docs (2026b) documents respecting reduced motion settings which assisted this implementation.*/
+/*MDN Web Docs (2026c) documents balanced text wrapping which assisted this implementation.*/
+/* Polish layer. It does not change the look of HustleHub+: same colours, fonts, shapes and layout.
+   It refines how things feel: motion, focus, touch, loading, and the small details that add up.
+   Imported last in App.tsx so it can refine the other stylesheets. */
+
+:root {
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- foundations ---------- */
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: #34313a transparent;
+}
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-tap-highlight-color: transparent;
+  overflow-wrap: break-word;
+}
+::selection {
+  background: rgba(56, 189, 248, 0.34);
+  color: #fff;
+}
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
+}
+a,
+button,
+input,
+select,
+textarea,
+summary,
+label[for] {
+  touch-action: manipulation;
+}
+img {
+  max-width: 100%;
+}
+.app {
+  min-height: 100dvh;
+}
+
+/* slim scrollbars that match the dark theme */
+::-webkit-scrollbar {
+  width: 11px;
+  height: 11px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #2d2a32;
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #403c47;
+  background-clip: padding-box;
+}
+
+/* ---------- focus: always visible for keyboard users, never for mouse clicks ---------- */
+:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 3px;
+  transition: outline-offset 0.15s var(--ease-out);
+}
+.field:focus-visible,
+.pf-tags-input:focus-visible {
+  outline: none;
+}
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--blue);
+  color: #fff;
+  font-weight: 700;
+  transform: translateY(-180%);
+  transition: transform 0.25s var(--ease-out);
+}
+.skip-link:focus {
+  transform: none;
+  color: #fff;
+}
+#main:focus {
+  outline: none;
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background 0.2s,
+    transform 0.25s var(--ease-out),
+    box-shadow 0.3s,
+    filter 0.2s,
+    border-color 0.2s;
+}
+/* a soft light sweep across solid buttons on hover */
+.btn:not(.btn-ghost)::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.2) 50%, transparent 70%);
+  transform: translateX(-120%);
+  transition: transform 0.8s var(--ease-out);
+  pointer-events: none;
+}
+.btn:not(.btn-ghost):not([disabled]):hover::after {
+  transform: translateX(120%);
+}
+.btn:hover:not([disabled]) {
+  box-shadow: 0 14px 32px -12px rgba(37, 99, 235, 0.95);
+}
+.btn-ghost:hover:not([disabled]) {
+  box-shadow: none;
+}
+.btn:active:not([disabled]),
+.app .mk .btn:active:not([disabled]) {
+  transform: translateY(0) scale(0.975);
+  transition-duration: 0.08s;
+}
+.btn[disabled] {
+  filter: saturate(0.6);
+}
+.mk .icon-btn:active {
+  transform: scale(0.94);
+}
+.mk button.linklike {
+  text-underline-offset: 3px;
+}
+.mk button.linklike:hover {
+  text-decoration: underline;
+}
+
+/* ---------- form fields ---------- */
+.field {
+  transition:
+    border-color 0.2s,
+    box-shadow 0.25s,
+    background-color 0.2s;
+}
+.field:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.field.bad:focus,
+.mk .field.bad:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.22);
+}
+.field.good:focus {
+  border-color: rgba(34, 197, 94, 0.8);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+}
+input[type="number"].field {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+select.field {
+  cursor: pointer;
+}
+/* browsers paint autofilled fields white or yellow, which looks broken on a dark theme */
+.field:-webkit-autofill,
+.field:-webkit-autofill:hover {
+  -webkit-text-fill-color: var(--fg);
+  caret-color: var(--fg);
+  box-shadow: 0 0 0 1000px #0e0d11 inset;
+  transition: background-color 9999s ease-out 0s;
+}
+.field:-webkit-autofill:focus {
+  box-shadow:
+    0 0 0 1000px #0e0d11 inset,
+    0 0 0 3px rgba(37, 99, 235, 0.3);
+}
+.err-text,
+.mk .err-text {
+  animation: pl-note 0.25s var(--ease-out) both;
+}
+@keyframes pl-note {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@media (max-width: 640px) {
+  /* 16px stops iPhones zooming in when a field is tapped */
+  .field,
+  .mk .field,
+  .pf-tags-input {
+    font-size: 16px;
+  }
+}
+
+/* ---------- logged in pages ---------- */
+/* children rise in one after another, which feels smoother than the whole page fading at once */
+.app .page.mk {
+  animation: none;
+}
+.app .page.mk > * {
+  animation: pl-rise 0.65s var(--ease-out) backwards;
+}
+.app .page.mk > :nth-child(2) {
+  animation-delay: 0.06s;
+}
+.app .page.mk > :nth-child(3) {
+  animation-delay: 0.12s;
+}
+.app .page.mk > :nth-child(4) {
+  animation-delay: 0.18s;
+}
+.app .page.mk > :nth-child(n + 5) {
+  animation-delay: 0.24s;
+}
+@keyframes pl-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+/* the nav bar deepens a little once you scroll */
+.app-top {
+  padding-top: max(12px, env(safe-area-inset-top, 0px));
+}
+.app-nav {
+  transition:
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+html[data-scrolled] .app-nav {
+  background: rgba(11, 11, 13, 0.82);
+  border-color: rgba(255, 255, 255, 0.13);
+  box-shadow:
+    0 24px 60px -24px rgba(0, 0, 0, 0.95),
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset;
+}
+@media (max-width: 760px) {
+  .app-nav .nav-links {
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+  .app-nav .nav-links::-webkit-scrollbar {
+    display: none;
+  }
+  .app-nav .nav-link {
+    min-height: 42px;
+  }
+}
+
+/* cards and rows ease their border colour instead of snapping */
+.app .mk .panel,
+.app .panel,
+.app .mk .stat,
+.app .mk .gigrow,
+.app .mk .tl-card,
+.app .mk .pkg,
+.app .mk .ticket {
+  transition:
+    border-color 0.3s,
+    box-shadow 0.35s,
+    transform 0.35s var(--ease-out);
+}
+@media (hover: hover) {
+  .app .mk .panel:hover,
+  .app .panel:hover,
+  .app .mk .stat:hover,
+  .app .mk .tl-card:hover {
+    border-color: rgba(56, 189, 248, 0.22);
+  }
+}
+.app .mk tbody tr {
+  transition: background 0.2s;
+}
+
+/* numbers line up and do not jiggle while they count */
+.mono,
+.stat strong,
+table td,
+table th,
+.pf-rate,
+.fx-ring-text {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- loading and empty states ---------- */
+.mk .skeleton,
+.app .mk .skeleton {
+  animation:
+    shimmer 1.6s linear infinite,
+    pl-fade 0.4s ease both;
+}
+@keyframes pl-fade {
+  from {
+    opacity: 0;
+  }
+}
+.mk .empty,
+.app .mk .empty {
+  animation: pl-rise 0.6s var(--ease-out) both;
+}
+
+/* ---------- toast ---------- */
+#toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition:
+    opacity 0.3s,
+    transform 0.5s var(--ease-spring);
+}
+#toast:empty::before {
+  display: none;
+}
+#toast::before {
+  content: "";
+  flex: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7.5'/%3E%3C/svg%3E")
+      center / 12px no-repeat,
+    linear-gradient(135deg, var(--blue), var(--cyan));
+}
+
+/* ---------- app-wide extras ---------- */
+.scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 90;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  opacity: 0;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8);
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.offline-bar {
+  position: fixed;
+  top: max(12px, env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 95;
+  max-width: calc(100% - 24px);
+  padding: 10px 18px;
+  border-radius: 14px;
+  border: 1px solid #7f1d1d;
+  background: #2a1219;
+  color: #fecaca;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.9);
+  transform: translateX(-50%);
+  animation: pl-drop 0.4s var(--ease-spring) both;
+}
+@keyframes pl-drop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-16px);
+  }
+}
+
+.crash {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(60% 50% at 20% 0%, rgba(37, 99, 235, 0.3), transparent 70%),
+    radial-gradient(50% 40% at 90% 100%, rgba(56, 189, 248, 0.16), transparent 70%), var(--bg);
+}
+.crash-card {
+  width: min(100%, 460px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 36px 32px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(17, 17, 20, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 40px 100px -40px rgba(0, 0, 0, 0.95);
+  animation: pl-rise 0.6s var(--ease-out) both;
+}
+.crash-card h1 {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.crash-card p {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.crash-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.crash-actions a.btn {
+  color: var(--fg);
+}
+
+/* ---------- motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* breathing room between the buttons in a page header (Back, Edit profile, View as others see it, status) */
+.page-head-actions {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+/*
+Reference List
+MDN Web Docs, 2026a. :focus-visible. [online] Available at: <https://developer.mozilla.org/en-US/docs/Web/CSS/:focus-visible> [Accessed 11 October 2026].
+MDN Web Docs, 2026b. prefers-reduced-motion. [online] Available at: <https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion> [Accessed 11 October 2026].
+MDN Web Docs, 2026c. text-wrap. [online] Available at: <https://developer.mozilla.org/en-US/docs/Web/CSS/text-wrap> [Accessed 11 October 2026].
+*/

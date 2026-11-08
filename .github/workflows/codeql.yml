@@ -1,0 +1,68 @@
+# Static application security testing with CodeQL (GitHub, 2026a).
+# The repository does not have GitHub code scanning (Advanced Security)/ Unable to access it do to permissions, so the results are not uploaded to the
+# Security tab. They are saved as a SARIF file, attached to the run as an artifact and summarised on the run page.
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly run so newly published rules are applied to the code as well
+    - cron: "0 3 * * 1"
+
+permissions:
+  # actions: read lets CodeQL look up the workflow run
+  actions: read
+  contents: read
+  # Only needed if code scanning is enabled later, as it repo doesnt have code scanning.
+  security-events: write
+
+jobs:
+  analyze:
+    name: Analyze JavaScript and TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7
+
+      - name: Set up CodeQL
+        uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+
+      - name: Run the analysis
+        uses: github/codeql-action/analyze@v4
+        with:
+          category: "/language:javascript-typescript"
+          # Keep the results as a file instead of uploading them to GitHub code scanning
+          upload: never
+          # The database upload fails here too, because the repository has no code scanning (GitHub, 2026b)
+          upload-database: false
+          output: codeql-results
+
+      - name: Summarise the results
+        if: always()
+        run: |
+          echo "## CodeQL results" >> "$GITHUB_STEP_SUMMARY"
+          COUNT=$(cat codeql-results/*.sarif | jq '[.runs[].results[]?] | length')
+          echo "Alerts found: **$COUNT**" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "" >> "$GITHUB_STEP_SUMMARY"
+            echo "| Rule | Severity | Location |" >> "$GITHUB_STEP_SUMMARY"
+            echo "| --- | --- | --- |" >> "$GITHUB_STEP_SUMMARY"
+            cat codeql-results/*.sarif | jq -r '.runs[].results[]? | "| \(.ruleId) | \(.level // "warning") | \(.locations[0].physicalLocation.artifactLocation.uri):\(.locations[0].physicalLocation.region.startLine) |"' >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Keep the results file
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: codeql-results
+          path: codeql-results
+
+# Reference List:
+# GitHub, 2026a. About code scanning with CodeQL. [online] Available at: <https://docs.github.com/en/code-security/code-scanning/introduction-to-code-scanning/about-code-scanning-with-codeql> [Accessed 20 October 2026].
+# GitHub, 2026b. CodeQL action: analyze inputs. [online] Available at: <https://github.com/github/codeql-action/blob/v4/analyze/action.yml> [Accessed 7 November 2026].

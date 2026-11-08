@@ -1,0 +1,12 @@
+/*React Bits (2026) demonstrates a liquid ether background which assisted this implementation.*/
+.liquid-ether-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
+/* 
+Reference List
+React Bits, 2026. Liquid Ether. [online] Available at: <https://reactbits.dev/backgrounds/liquid-ether> [Accessed 07 October 2026]. 
+*/

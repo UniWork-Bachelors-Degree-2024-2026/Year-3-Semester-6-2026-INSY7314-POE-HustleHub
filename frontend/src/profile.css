@@ -1,0 +1,1253 @@
+/*MDN Web Docs (2026) documents animating a custom CSS property which assisted this implementation.*/
+/*React Bits (2026a) provides the Click Spark component which assisted this implementation.*/
+/*React Bits (2026b) provides the Tilted Card component which assisted this implementation.*/
+/* Profile page styles. Same palette and glass look as the rest of the logged in app (see App.css).
+   Everything is prefixed pf- or fx- so nothing else on the site changes. */
+
+/* ---------- nav bar avatar (links to the profile) ---------- */
+.app-nav .avatar-link {
+  position: relative;
+  overflow: hidden;
+  text-decoration: none;
+  color: #04121f;
+  transition:
+    transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 0.25s;
+}
+.app-nav .avatar-link:hover {
+  color: #04121f;
+  transform: scale(1.08);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.45);
+}
+.app-nav .avatar-link.is-active {
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.6);
+}
+.app-nav .avatar-link img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ---------- layout ---------- */
+.pf {
+  display: grid;
+  grid-template-columns: minmax(300px, 390px) minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+  padding-bottom: 72px;
+}
+.pf-side {
+  position: sticky;
+  top: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.pf-main {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.pf-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.pf-fade {
+  animation: pf-in 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pf-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+.pf-preview-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 980px) {
+  .pf {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pf-side {
+    position: static;
+  }
+}
+
+/* ---------- panels ---------- */
+.pf-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(18px, 2.2vw, 28px);
+}
+.pf-panel-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pf-panel-title h2 {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.pf-panel-title p {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.pf-two {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+.pf-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.pf-label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pf-readonly {
+  color: var(--soft);
+  font-size: 14px;
+  line-height: 1.6;
+}
+.pf-fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+/* A legend sits outside the fieldset's flex layout, so the gap above never reaches it */
+.pf-fieldset > legend {
+  padding: 0;
+  margin-bottom: 12px;
+}
+.pf-chips-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pf .chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.pf .chip[aria-pressed="true"] {
+  box-shadow: 0 0 22px -6px rgba(56, 189, 248, 0.7);
+}
+.pf .input-wrap .field {
+  padding-left: 44px;
+}
+.pf select.field {
+  padding-right: 14px;
+}
+
+/* ---------- tabs ---------- */
+.pf-tabs {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(17, 17, 20, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  overflow-x: auto;
+  align-self: flex-start;
+  max-width: 100%;
+}
+.pf-tab-pill {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: var(--pill-w, 0px);
+  transform: translateX(var(--pill-x, 0px));
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.55), rgba(56, 189, 248, 0.3));
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  box-shadow: 0 0 22px -4px rgba(56, 189, 248, 0.55);
+  transition:
+    transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1),
+    width 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pf-tab {
+  position: relative;
+  z-index: 1;
+  min-height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 14px;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.pf-tab:hover,
+.pf-tab[aria-selected="true"] {
+  color: #fff;
+}
+.pf-tab-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background: var(--red);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.25);
+}
+
+/* ---------- photo uploader ---------- */
+.pf-photo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px 18px;
+}
+.pf-drop {
+  flex: 1 1 320px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1.5px dashed rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.05);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    transform 0.2s;
+}
+.pf-drop:hover,
+.pf-drop.over,
+.pf-drop:focus-within {
+  border-color: var(--cyan);
+  background: rgba(56, 189, 248, 0.1);
+}
+.pf-drop.over {
+  transform: scale(1.015);
+}
+.pf-drop-av {
+  position: relative;
+  flex: none;
+  width: 84px;
+  height: 84px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--raised);
+  border: 2px solid rgba(56, 189, 248, 0.5);
+  color: var(--faint);
+}
+.pf-drop-av img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.pf-drop-cam {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  color: #04121f;
+  box-shadow: 0 6px 16px -4px rgba(37, 99, 235, 0.9);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.pf-drop:hover .pf-drop-cam {
+  transform: scale(1.15) rotate(-8deg);
+}
+.pf-drop-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.pf-drop-copy strong {
+  font-family: var(--display);
+  font-size: 16px;
+}
+.pf-drop-copy small {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.pf-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pf .btn-ghost.btn-sm {
+  cursor: pointer;
+}
+
+/* banner picker */
+.pf-banners {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+}
+.pf-swatch {
+  position: relative;
+  height: 56px;
+  padding: 0 12px;
+  display: flex;
+  align-items: flex-end;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.6);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.pf-swatch span {
+  position: relative;
+  padding-bottom: 7px;
+}
+.pf-swatch:hover {
+  transform: translateY(-2px);
+}
+.pf-swatch[aria-pressed="true"] {
+  border-color: #fff;
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.45);
+}
+
+.pf-banner-ocean {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb 45%, #38bdf8);
+}
+.pf-banner-aurora {
+  background:
+    radial-gradient(60% 130% at 15% 0%, rgba(56, 189, 248, 0.85), transparent 60%),
+    radial-gradient(70% 130% at 95% 100%, rgba(37, 99, 235, 0.95), transparent 62%), #0b1b3a;
+}
+.pf-banner-midnight {
+  background:
+    radial-gradient(50% 120% at 80% 0%, rgba(56, 189, 248, 0.4), transparent 65%),
+    linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px) 0 0 / 22px 22px,
+    linear-gradient(135deg, #0b1020, #1b1a1e);
+}
+.pf-banner-glacier {
+  background: linear-gradient(135deg, #38bdf8, #7dd3fc 48%, #2563eb);
+}
+
+/* ---------- live preview card ---------- */
+.fx-tilt-wrap {
+  perspective: 1000px;
+}
+.fx-tilt {
+  position: relative;
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+  border-radius: 28px;
+  will-change: transform;
+}
+.fx-tilt-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.14), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.fx-tilt:hover .fx-tilt-glare {
+  opacity: 1;
+}
+
+.pf-card {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(14, 14, 17, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow:
+    0 40px 90px -50px rgba(37, 99, 235, 0.9),
+    0 0 0 1px rgba(255, 255, 255, 0.02) inset;
+  overflow: hidden;
+}
+.pf-banner {
+  position: relative;
+  height: 132px;
+}
+.pf-banner::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(14, 14, 17, 0.85));
+}
+.pf-card-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: -56px;
+  padding: 0 24px 24px;
+}
+.pf-av-ring {
+  position: relative;
+  align-self: flex-start;
+  padding: 4px;
+  border-radius: 50%;
+  background: conic-gradient(from var(--pf-angle, 0deg), #2563eb, #38bdf8, #7dd3fc, #2563eb);
+  animation: pf-spin 7s linear infinite;
+  box-shadow: 0 14px 34px -10px rgba(37, 99, 235, 0.9);
+}
+@property --pf-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+@keyframes pf-spin {
+  to {
+    --pf-angle: 360deg;
+  }
+}
+.pf-av {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(135deg, #14233f, #0b0b0d);
+  border: 3px solid var(--bg);
+}
+.pf-av img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: pf-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pf-pop {
+  from {
+    opacity: 0;
+    transform: scale(1.15);
+  }
+}
+.pf-av b {
+  font-family: var(--display);
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--cyan-soft);
+}
+.pf-av-dot {
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 4px solid var(--bg);
+  background: var(--faint);
+}
+.pf-av-dot.available {
+  background: var(--green);
+}
+.pf-av-dot.busy {
+  background: #f59e0b;
+}
+.pf-id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.pf-name {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(24px, 2.4vw, 32px);
+  letter-spacing: -0.04em;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+.pf-headline {
+  color: var(--soft);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.pf-headline.empty {
+  color: var(--faint);
+  font-style: italic;
+}
+.pf-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  list-style: none;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pf-meta li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pf-meta svg {
+  color: var(--cyan);
+}
+.pf-avail .api-dot {
+  background: var(--green);
+}
+.pf-avail.busy .api-dot {
+  background: #f59e0b;
+}
+.pf-avail.away .api-dot {
+  background: var(--faint);
+}
+.pf-bio {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.pf-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  list-style: none;
+}
+.pf-chips li {
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.08);
+  color: var(--cyan-soft);
+  font-size: 12px;
+  font-weight: 700;
+  animation: pf-pop 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pf-chips li.more {
+  border-color: var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+}
+.pf-card-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+.pf-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  min-width: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+}
+.pf-links span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pf-links svg {
+  color: var(--cyan);
+  flex: none;
+}
+.pf-rate {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+}
+.pf-rate small {
+  margin-left: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+/* ---------- profile strength ---------- */
+.pf-strength {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.pf-strength-copy {
+  min-width: 0;
+}
+.pf-strength-copy h2 {
+  font-family: var(--display);
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+.pf-strength-copy p {
+  color: var(--soft);
+  font-size: 14px;
+}
+.pf-strength-copy ul {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  list-style: none;
+}
+.pf-strength-copy li button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    color 0.2s,
+    transform 0.2s;
+}
+.pf-strength-copy li button::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan);
+  flex: none;
+}
+.pf-strength-copy li button:hover {
+  color: var(--cyan-soft);
+  transform: translateX(3px);
+}
+.fx-ring {
+  position: relative;
+  flex: none;
+}
+.fx-ring-bar {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.fx-ring-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.fx-ring-text small {
+  font-size: 14px;
+  color: var(--muted);
+  margin-left: 1px;
+}
+
+/* ---------- skill tags ---------- */
+.pf-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pf-tags-box.field {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  height: auto;
+  padding: 8px 10px;
+  cursor: text;
+}
+.pf-tags-box:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+}
+.pf-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px 5px 11px;
+  border-radius: 999px;
+  background: var(--blue-tint);
+  border: 1px solid rgba(37, 99, 235, 0.45);
+  color: #bcd2fb;
+  font-size: 13px;
+  font-weight: 700;
+  animation: pf-pop 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pf-tag button {
+  width: 20px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+}
+.pf-tag button:hover {
+  background: rgba(239, 68, 68, 0.35);
+  color: #fff;
+}
+.pf-tags-input {
+  flex: 1 1 140px;
+  min-width: 120px;
+  min-height: 32px;
+  border: 0;
+  background: transparent;
+  color: var(--fg);
+  font: inherit;
+  font-size: 15px;
+}
+.pf-tags-input:focus {
+  outline: none;
+}
+.pf-tags-input::placeholder {
+  color: var(--faint);
+}
+.pf-suggest {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.pf-suggest-chip {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px dashed var(--line-strong);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.pf-suggest-chip:hover {
+  border-color: var(--cyan);
+  color: var(--cyan-soft);
+  background: var(--cyan-tint);
+}
+
+/* ---------- switches ---------- */
+.pf-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 14px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.pf-toggle-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.pf-toggle-copy label {
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+}
+.pf-toggle-copy small {
+  color: var(--muted);
+  font-size: 13px;
+}
+.pf-switch {
+  position: relative;
+  flex: none;
+  width: 52px;
+  height: 30px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--raised);
+  cursor: pointer;
+  transition:
+    background 0.25s,
+    border-color 0.25s,
+    box-shadow 0.25s;
+}
+.pf-switch-knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--soft);
+  transition:
+    transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.3),
+    background 0.25s;
+}
+.pf-switch.on {
+  background: linear-gradient(135deg, var(--blue), var(--cyan));
+  border-color: rgba(56, 189, 248, 0.6);
+  box-shadow: 0 0 20px -4px rgba(56, 189, 248, 0.7);
+}
+.pf-switch.on .pf-switch-knob {
+  transform: translateX(22px);
+  background: #fff;
+}
+
+/* ---------- password rules ---------- */
+.pf-rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  list-style: none;
+}
+.pf-rules li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 11px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-size: 12px;
+  font-weight: 700;
+  transition: all 0.25s;
+}
+.pf-rules li svg {
+  opacity: 0.4;
+}
+.pf-rules li.ok {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: var(--green-tint);
+  color: var(--green);
+}
+.pf-rules li.ok svg {
+  opacity: 1;
+}
+
+.pf-device-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ---------- save bar ---------- */
+.pf-savebar {
+  position: fixed;
+  left: 50%;
+  bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: calc(100% - 24px);
+  padding: 10px 12px 10px 20px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(11, 11, 13, 0.78);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.9);
+  transition:
+    border-color 0.3s,
+    box-shadow 0.3s;
+}
+.pf-savebar.dirty {
+  border-color: rgba(56, 189, 248, 0.45);
+  box-shadow:
+    0 24px 60px -20px rgba(0, 0, 0, 0.9),
+    0 0 40px -12px rgba(56, 189, 248, 0.6);
+}
+.pf-savebar-text {
+  color: var(--soft);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pf-savebar .btn {
+  min-height: 40px;
+}
+body:has(.pf-savebar) #toast {
+  bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 560px) {
+  .pf-savebar-text {
+    display: none;
+  }
+  .pf-savebar {
+    padding-left: 12px;
+  }
+}
+
+/* sparks that fly out of the save button */
+.fx-spark {
+  position: relative;
+  display: inline-flex;
+}
+.fx-spark-canvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 300px;
+  height: 180px;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* ---------- photo cropper pop-up ---------- */
+.pf-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(5, 5, 7, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  animation: pf-fade-in 0.25s ease both;
+}
+@keyframes pf-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+.pf-modal {
+  position: relative;
+  width: min(100%, 400px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 24px 24px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(70% 60% at 50% 0%, rgba(37, 99, 235, 0.28), transparent 70%),
+    rgba(17, 17, 20, 0.96);
+  box-shadow: 0 50px 120px -30px rgba(0, 0, 0, 0.95);
+  animation: pf-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.pf-modal h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+.pf-modal-sub {
+  margin-top: -8px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+.pf-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+.pf-modal-close:hover {
+  background: var(--raised);
+  color: var(--fg);
+}
+.pf-crop {
+  position: relative;
+  max-width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  background: #000;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.pf-crop:active {
+  cursor: grabbing;
+}
+.pf-crop img {
+  position: absolute;
+  max-width: none;
+  pointer-events: none;
+}
+.pf-crop-mask {
+  position: absolute;
+  inset: 10px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 999px rgba(7, 7, 9, 0.62);
+  border: 2px solid rgba(125, 211, 252, 0.9);
+  pointer-events: none;
+}
+.pf-crop-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 10px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(7, 7, 9, 0.7);
+  color: var(--soft);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.pf-zoom {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.pf-zoom input {
+  flex: 1;
+  accent-color: var(--cyan);
+}
+.pf-modal-actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* ---------- motion preferences ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .pf-av-ring,
+  .pf-fade,
+  .pf-modal,
+  .pf-modal-backdrop,
+  .pf-av img,
+  .pf-chips li,
+  .pf-tag {
+    animation: none;
+  }
+  .fx-tilt,
+  .pf-tab-pill,
+  .fx-ring-bar,
+  .pf-switch-knob {
+    transition: none;
+  }
+}
+
+/* ---------- public profile (viewing someone else) ---------- */
+.pf-name-link,
+.pf-name-link:hover {
+  color: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  background: linear-gradient(var(--cyan), var(--cyan)) 0 100% / 0 1.5px no-repeat;
+  transition:
+    background-size 0.3s,
+    color 0.2s;
+}
+.pf-name-link:hover {
+  color: var(--cyan-soft);
+  background-size: 100% 1.5px;
+}
+.pf-about {
+  color: var(--soft);
+  font-size: 15px;
+  line-height: 1.7;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}
+.pf-chips-lg li {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+.pf-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 14px 20px;
+}
+.pf-facts-col {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+}
+.pf-facts div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.pf-facts dt {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+.pf-facts dd {
+  font-weight: 700;
+  font-size: 15px;
+  overflow-wrap: anywhere;
+}
+.pf-gigs-static .gig {
+  cursor: default;
+}
+.pf-trust {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: start;
+}
+.pf-trust-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.pf-trust-ring {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.pf-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+.pf-checks li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--dim);
+  font-size: 14px;
+  font-weight: 600;
+}
+.pf-checks li svg {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  padding: 4px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  opacity: 0.5;
+}
+.pf-checks li.ok {
+  color: var(--soft);
+}
+.pf-checks li.ok svg {
+  opacity: 1;
+  border-color: rgba(34, 197, 94, 0.55);
+  background: var(--green-tint);
+  color: var(--green);
+}
+.pf-extlinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.pf-extlinks a {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(56, 189, 248, 0.3);
+  background: rgba(56, 189, 248, 0.07);
+  color: var(--cyan-soft);
+  font-size: 14px;
+  font-weight: 700;
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+.pf-extlinks a:hover {
+  background: rgba(56, 189, 248, 0.16);
+  transform: translateY(-2px);
+}
+.pf-history {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+.pf-history li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+.pf-history-title {
+  font-weight: 700;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pf-history-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+@media (max-width: 760px) {
+  .pf-trust {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .pf-trust-ring {
+    flex-direction: row;
+  }
+}
+
+/*
+Reference List
+MDN Web Docs, 2026. @property. [online] Available at: <https://developer.mozilla.org/en-US/docs/Web/CSS/@property> [Accessed 11 October 2026].
+React Bits, 2026a. Click Spark. [online] Available at: <https://reactbits.dev/animations/click-spark> [Accessed 11 October 2026].
+React Bits, 2026b. Tilted Card. [online] Available at: <https://reactbits.dev/components/tilted-card> [Accessed 11 October 2026].
+*/

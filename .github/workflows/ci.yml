@@ -1,0 +1,334 @@
+# Continuous integration for the whole stack: tests, builds, API tests, browser integration tests, a container run and security checks.
+# Every job has to pass, so one failing test, build or scan fails the workflow (GitHub, 2026b).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# A newer push cancels the older run on the same branch, so only the latest commit is checked (GitHub, 2026b).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# The workflow token can only read the repository (GitHub, 2026b).
+permissions:
+  contents: read
+
+jobs:
+  repository-hygiene:
+    name: No secrets or logs committed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Fail if a key, env file or log is tracked
+        run: |
+          tracked="$(git ls-files '*.key' '.env' '*/.env' '*.log')"
+          if [ -n "$tracked" ]; then
+            echo "These files must not be committed:"
+            echo "$tracked"
+            exit 1
+          fi
+
+  backend:
+    name: Backend tests and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7 # (GitHub, 2026g).
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      # npm ci stops with an error if package.json and the lock file disagree (npm, 2026b).
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      # Exits with an error for any high or critical finding, and only the dependencies that ship are audited (npm, 2026a).
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  frontend:
+    name: Frontend tests, build and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7 # (GitHub, 2026g).
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Production build
+        run: npm run build
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+  api-tests:
+    name: API tests with Newman
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # A MongoDB service container, reached on localhost through the mapped port (GitHub, 2026b; GitHub, 2026c).
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        # The service only counts as ready once it answers a ping (GitHub, 2026d; MongoDB, 2026b).
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CONN_STRING: mongodb://localhost:27017/hustlehub_ci
+      # A throwaway value that only exists for this run, it protects nothing
+      JWT_SECRET: ci-only-signing-secret-0123456789abcdef0123456789abcdef
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7 # (GitHub, 2026g).
+        with:
+          node-version: 24
+
+      # A self-signed certificate valid for localhost, because the real key is never committed (OpenSSL, 2026).
+      - name: Generate a throwaway certificate
+        run: |
+          openssl req -x509 -newkey rsa:2048 -noenc -keyout cert.key -out cert.crt -days 1 \
+            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          cp cert.crt ca.crt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install Newman
+        working-directory: Postman_Testing
+        run: npm install
+
+      # The runner starts its own API servers, seeds test data, runs the collection and removes the data again (Newman, 2026).
+      - name: Run the Postman collection
+        working-directory: Postman_Testing
+        shell: bash
+        run: npm test 2>&1 | tee newman-output.txt
+
+      # Keeps the Newman results as evidence even when the run failed (GitHub, 2026e; GitHub, 2026h).
+      - name: Keep the Newman output
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: newman-output
+          path: Postman_Testing/newman-output.txt
+          if-no-files-found: ignore
+
+  integration-tests:
+    name: Frontend integration tests with Playwright
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      CONN_STRING: mongodb://localhost:27017/hustlehub_integration
+      # A throwaway value that only exists for this run, it protects nothing
+      JWT_SECRET: ci-only-signing-secret-0123456789abcdef0123456789abcdef
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7 # (GitHub, 2026g).
+        with:
+          node-version: 24
+
+      - name: Generate a throwaway certificate
+        run: |
+          openssl req -x509 -newkey rsa:2048 -noenc -keyout cert.key -out cert.crt -days 1 \
+            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          cp cert.crt ca.crt
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright
+        working-directory: Integration_Testing
+        run: npm ci
+
+      # Chromium and its system libraries (Playwright, 2026h).
+      - name: Install the Chromium browser
+        working-directory: Integration_Testing
+        run: npx playwright install --with-deps chromium
+
+      # A failed test fails the job (Playwright, 2026b).
+      - name: Run the Playwright tests
+        working-directory: Integration_Testing
+        run: npx playwright test
+
+      # Keeps the report even when tests fail (Playwright, 2026c; GitHub, 2026h).
+      - name: Keep the Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: Integration_Testing/playwright-report/
+          if-no-files-found: ignore
+
+  docker:
+    name: Docker images build and run
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mongo:
+        image: mongo:7
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      # The containers run as non-root users, so the throwaway key and the log folder must be readable and writable by them.
+      - name: Prepare certificate, logs and backend settings
+        run: |
+          openssl req -x509 -newkey rsa:2048 -noenc -keyout cert.key -out cert.crt -days 1 \
+            -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+          cp cert.crt ca.crt
+          chmod 644 cert.key cert.crt ca.crt
+          mkdir -p backend/logs
+          chmod 777 backend/logs
+          printf '%s\n' \
+            "CONN_STRING=mongodb://host.docker.internal:27017/hustlehub_ci" \
+            "JWT_SECRET=ci-only-signing-secret-0123456789abcdef0123456789abcdef" > backend/.env
+
+      # --wait returns once both services are running and healthy, which fails the step if one never is (Docker, 2026a).
+      - name: Build both images and start the stack
+        run: docker compose up --build -d --wait
+
+      - name: Check the running stack
+        run: |
+          curl -skf https://localhost:3000/api/health
+          curl -skf -o /dev/null https://localhost:5173/
+          curl -skI https://localhost:3000/api/health | grep -i "x-frame-options"
+          curl -skI https://localhost:5173/ | grep -i "content-security-policy"
+
+      - name: Show the container logs
+        if: always()
+        run: docker compose logs --no-color
+
+      - name: Stop the stack
+        if: always()
+        run: docker compose down -v
+
+  pipeline-passed:
+    name: All checks passed
+    needs: [repository-hygiene, backend, frontend, api-tests, integration-tests, docker]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Report success
+        run: echo "Every check passed."
+
+  # Only a push to main publishes, and only after every check above passed, so a pull request never needs the Docker Hub secrets (Docker, 2026b).
+  publish:
+    name: Publish images to Docker Hub
+    needs: [pipeline-passed]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v7 # (GitHub, 2026f).
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4 # (Docker, 2026b).
+
+      - name: Sign in to Docker Hub
+        uses: docker/login-action@v4 # (Docker, 2026b).
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Each image gets the latest tag and a tag with the commit it was built from
+      - name: Build and push the backend image
+        uses: docker/build-push-action@v7 # (Docker, 2026b).
+        with:
+          context: ./backend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hustlehub-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hustlehub-backend:${{ github.sha }}
+
+      - name: Build and push the frontend image
+        uses: docker/build-push-action@v7 # (Docker, 2026b).
+        with:
+          context: ./frontend
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/hustlehub-frontend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/hustlehub-frontend:${{ github.sha }}
+
+# Reference List:
+# Docker, 2026a. docker compose up. [online] Available at: <https://docs.docker.com/reference/cli/docker/compose/up/> [Accessed 6 November 2026].
+# Docker, 2026b. Docker Build GitHub Actions. [online] Available at: <https://docs.docker.com/build/ci/github-actions/> [Accessed 7 November 2026].
+# GitHub, 2026b. Workflow syntax for GitHub Actions. [online] Available at: <https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax> [Accessed 6 November 2026].
+# GitHub, 2026c. Communicating with Docker service containers. [online] Available at: <https://docs.github.com/en/actions/tutorials/use-containerized-services/use-docker-service-containers> [Accessed 6 November 2026].
+# GitHub, 2026d. Creating PostgreSQL service containers. [online] Available at: <https://docs.github.com/en/actions/tutorials/use-containerized-services/create-postgresql-service-containers> [Accessed 6 November 2026].
+# GitHub, 2026e. Evaluate expressions in workflows and actions. [online] Available at: <https://docs.github.com/en/actions/reference/workflows-and-actions/expressions> [Accessed 6 November 2026].
+# GitHub, 2026f. actions/checkout. [online] Available at: <https://github.com/actions/checkout> [Accessed 6 November 2026].
+# GitHub, 2026g. actions/setup-node. [online] Available at: <https://github.com/actions/setup-node> [Accessed 6 November 2026].
+# GitHub, 2026h. actions/upload-artifact. [online] Available at: <https://github.com/actions/upload-artifact> [Accessed 6 November 2026].
+# MongoDB, 2026b. ping (database command). [online] Available at: <https://www.mongodb.com/docs/manual/reference/command/ping/> [Accessed 6 November 2026].
+# Newman, 2026. Newman: the command line collection runner for Postman. [online] Available at: <https://github.com/postmanlabs/newman/blob/develop/README.md> [Accessed 10 October 2026].
+# npm, 2026a. npm-audit. [online] Available at: <https://docs.npmjs.com/cli/v11/commands/npm-audit> [Accessed 6 November 2026].
+# npm, 2026b. npm-ci. [online] Available at: <https://docs.npmjs.com/cli/v11/commands/npm-ci> [Accessed 6 November 2026].
+# OpenSSL, 2026. openssl-req. [online] Available at: <https://docs.openssl.org/3.0/man1/openssl-req/> [Accessed 6 November 2026].
+# Playwright, 2026b. Test configuration. [online] Available at: <https://playwright.dev/docs/test-configuration> [Accessed 7 November 2026].
+# Playwright, 2026c. Trace viewer. [online] Available at: <https://playwright.dev/docs/trace-viewer> [Accessed 7 November 2026].
+# Playwright, 2026h. Continuous Integration. [online] Available at: <https://playwright.dev/docs/ci> [Accessed 7 November 2026].

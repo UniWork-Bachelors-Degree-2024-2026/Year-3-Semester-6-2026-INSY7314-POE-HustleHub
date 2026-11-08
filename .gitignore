@@ -1,0 +1,11 @@
+*.key
+.env
+node_modules
+
+# Runtime logs are written by the backend, they contain member emails and IP addresses
+backend/logs/
+*.log
+
+# Playwright results, the CI keeps its own copy as an artifact
+Integration_Testing/test-results/
+Integration_Testing/playwright-report/

@@ -1,0 +1,23 @@
+# Dependencies will be downloaded inside the container
+node_modules
+
+# Build artifacts
+dist
+dist-ssr
+
+# Do not copy existing local log files
+logs
+*.log
+
+# Do not copy secret environment files into image layers
+.env
+.env.*
+*.local
+
+# Docker files
+Dockerfile
+.dockerignore
+
+# Git files
+.git
+.gitignore

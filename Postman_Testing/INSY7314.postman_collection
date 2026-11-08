@@ -1,0 +1,1273 @@
+{
+    "info": {
+        "_postman_id": "6a9d195d-3a4a-42dc-8134-a67702c0a20d",
+        "name": "INSY7314",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "56613097"
+    },
+    "item": [
+        {
+            "name": "Auth Requests",
+            "item": [
+                {
+                    "name": "Registration Tests",
+                    "item": [
+                        {
+                            "name": "Invalid Username on Registration Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"username\": \"m\",\r\n  \"email\": \"max@example.com\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/register",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "register"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates validation failure on username\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.success).to.be.false;",
+                                            "    pm.expect(jsonData.message).to.eql(\"Validation failed.\");",
+                                            "    pm.expect(jsonData.errors).to.be.an(\"array\");",
+                                            "    pm.expect(jsonData.errors.some(e => e.includes(\"Username\"))).to.be.true;",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Registration Sends Code Success",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"username\": \"freelancer\",\r\n  \"email\": \"freelancer@example.com\",\r\n  \"password\": \"SecurePassword123!\",\r\n  \"role\": \"freelancer\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/register",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "register"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "prerequest",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "// Generate a unique freelancer email for reliable Newman/test runner execution",
+                                            "const uniqueSuffix = Date.now();",
+                                            "pm.collectionVariables.set(\"dynamic_freelancer_email\", `freelancer_${uniqueSuffix}@example.com`);",
+                                            "pm.request.body.raw = JSON.stringify({",
+                                            "    username: \"freelancer_user\",",
+                                            "    email: pm.collectionVariables.get(\"dynamic_freelancer_email\"),",
+                                            "    password: \"SecurePassword123!\",",
+                                            "    role: \"freelancer\"",
+                                            "});"
+                                        ]
+                                    }
+                                },
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 200 OK, the code is emailed\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"No token and no account until the code is confirmed\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData).to.not.have.property(\"token\");",
+                                            "    pm.expect(jsonData.expiresInMinutes).to.eql(10);",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {"name":"Registration Wrong Code Failure","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/register/verify","body":{"mode":"raw","raw":"{\"email\":\"{{newcomer_email}}\",\"code\":\"000000\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); }); pm.test(\"Code is not revealed\", function () { pm.expect(pm.response.json().message).to.include(\"incorrect or has expired\"); });"]}}]},
+                        {"name":"Registration Confirm Code Success","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/register/verify","body":{"mode":"raw","raw":"{\"email\":\"{{newcomer_email}}\",\"code\":\"{{register_code}}\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); }); const body = pm.response.json(); pm.test(\"Account created with the chosen role and a token\", function () { pm.expect(body.role).to.eql(\"freelancer\"); pm.expect(body.token).to.be.a(\"string\"); }); pm.collectionVariables.set(\"json_web_token_0qeb\", body.token); pm.collectionVariables.set(\"freelancer_user_id\", body._id);"]}}]},
+                        {
+                            "name": "Invalid Email on Registration Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"username\": \"max\",\r\n  \"email\": \"not-an-email\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/register",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "register"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates invalid email error\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.success).to.be.false;",
+                                            "    pm.expect(jsonData.errors.some(e => e.toLowerCase().includes(\"email\"))).to.be.true;",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Invalid Password on Registration Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"username\": \"max\",\r\n  \"email\": \"max2@example.com\",\r\n  \"password\": \"weakpassword\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/register",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "register"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates password complexity failure\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.success).to.be.false;",
+                                            "    pm.expect(jsonData.errors.some(e => e.toLowerCase().includes(\"password\"))).to.be.true;",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Duplicate Email Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"username\": \"max2\",\r\n  \"email\": \"max@example.com\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/register",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "register"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request for duplicate email\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates duplicate email error\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.include(\"User already exists\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Login Tests",
+                    "item": [
+                        {
+                            "name": "Login Success",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"email\": \"max@example.com\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/login",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "login"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 200 OK\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response returns JWT token and user info\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData).to.have.property(\"token\");",
+                                            "    pm.expect(jsonData).to.have.property(\"_id\");",
+                                            "    pm.expect(jsonData).to.have.property(\"email\");",
+                                            "    ",
+                                            "    // Store client token for client role requests",
+                                            "    pm.collectionVariables.set(\"json_web_token_0gs0\", jsonData.token);",
+                                            "    pm.collectionVariables.set(\"auth_secret_15ef\", jsonData.token);",
+                                            "    pm.collectionVariables.set(\"client_user_id\", jsonData._id);",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Incorrect Password on Login Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"email\": \"max@example.com\",\r\n  \"password\": \"WrongPassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/login",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "login"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates invalid credentials\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.eql(\"Invalid credentials.\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "User doesn't exist Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"email\": \"nonexistent@example.com\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/login",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "login"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates invalid credentials\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.eql(\"Invalid credentials.\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Incorrect Email on Login Failure",
+                            "request": {
+                                "method": "POST",
+                                "header": [],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "{\r\n  \"email\": \"bademailformat\",\r\n  \"password\": \"SecurePassword123!\"\r\n}\r\n",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/login",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "login"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 400 Bad Request on invalid email format\", function () {",
+                                            "    pm.response.to.have.status(400);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response returns credential error without leaking specific format issue\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.include(\"Invalid credentials\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Profile success (Valid Token)",
+                            "protocolProfileBehavior": {
+                                "disableBodyPruning": true
+                            },
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "Bearer {{json_web_token_0gs0}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "body": {
+                                    "mode": "raw",
+                                    "raw": "",
+                                    "options": {
+                                        "raw": {
+                                            "language": "json"
+                                        }
+                                    }
+                                },
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/profile",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "profile"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 200 OK\", function () {",
+                                            "    pm.response.to.have.status(200);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response contains user profile without password\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData).to.have.property(\"_id\");",
+                                            "    pm.expect(jsonData).to.have.property(\"email\");",
+                                            "    pm.expect(jsonData).to.have.property(\"role\");",
+                                            "    pm.expect(jsonData).to.not.have.property(\"password\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Profile Failure (No Token)",
+                            "request": {
+                                "method": "GET",
+                                "header": [],
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/profile",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "profile"
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                                            "    pm.response.to.have.status(401);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates missing token\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.include(\"no token provided\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "name": "Get Profile Failure (Invalid Token)",
+                            "request": {
+                                "method": "GET",
+                                "header": [
+                                    {
+                                        "key": "Authorization",
+                                        "value": "{{bearer_token_01pc}}",
+                                        "type": "text"
+                                    }
+                                ],
+                                "url": {
+                                    "raw": "https://localhost:3000/api/auth/profile?",
+                                    "protocol": "https",
+                                    "host": [
+                                        "localhost"
+                                    ],
+                                    "port": "3000",
+                                    "path": [
+                                        "api",
+                                        "auth",
+                                        "profile"
+                                    ],
+                                    "query": [
+                                        {
+                                            "key": "",
+                                            "value": null,
+                                            "type": "text"
+                                        }
+                                    ]
+                                }
+                            },
+                            "response": [],
+                            "event": [
+                                {
+                                    "listen": "test",
+                                    "script": {
+                                        "type": "text/javascript",
+                                        "exec": [
+                                            "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                                            "    pm.response.to.have.status(401);",
+                                            "});",
+                                            "",
+                                            "pm.test(\"Response indicates token verification failure\", function () {",
+                                            "    var jsonData = pm.response.json();",
+                                            "    pm.expect(jsonData.message).to.include(\"token\");",
+                                            "});"
+                                        ]
+                                    }
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "Password Reset Tests",
+                    "item": [
+                        {"name":"Forgot Password Success","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/password/forgot","body":{"mode":"raw","raw":"{\"email\":\"{{client2_email}}\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.collectionVariables.set(\"forgot_message\", pm.response.json().message);"]}}]},
+                        {"name":"Reset With Correct Code Success","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/password/reset","body":{"mode":"raw","raw":"{\"email\":\"{{resetuser_email}}\",\"code\":\"{{reset_code}}\",\"newPassword\":\"{{reset_password}}\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"No automatic login\", function () { pm.expect(pm.response.json()).to.not.have.property(\"token\"); });"]}}]},
+                        {"name":"Old Session After Reset Failure","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{aged_reset_token}}"}],"url":"https://localhost:3000/api/auth/profile"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"]}}]}
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Gig Requests",
+            "item": [
+                {
+                    "name": "Create Gig (Successful)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{json_web_token_0qeb}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"title\": \"Full-Stack Web Development 2\",\r\n  \"description\": \"I will design and build a secure, full-stack MERN web application tailored to your needs.\",\r\n  \"category\": \"Programming & Tech\",\r\n  \"price\": 3500.00,\r\n  \"deliveryTimeDays\": 7,\r\n  \"status\": \"active\"\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 201 Created\", function () {",
+                                    "    pm.response.to.have.status(201);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Gig successfully created with populated freelancer\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data).to.have.property(\"_id\");",
+                                    "    pm.expect(jsonData.data.price).to.eql(3500);",
+                                    "    pm.expect(jsonData.data.freelancer).to.be.an(\"object\");",
+                                    "    ",
+                                    "    // Store gig ID for subsequent single gig, update, and booking tests",
+                                    "    pm.collectionVariables.set(\"created_gig_id\", jsonData.data._id);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Gig (Failure - Client Forbidden)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{auth_secret_15ef}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"title\": \"Client Attempting to Post\",\r\n  \"description\": \"Clients should not be allowed to post freelance gig offerings on the marketplace.\",\r\n  \"category\": \"Programming & Tech\",\r\n  \"price\": 1000.00,\r\n  \"deliveryTimeDays\": 3,\r\n  \"status\": \"active\"\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 403 Forbidden for client role\", function () {",
+                                    "    pm.response.to.have.status(403);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response blocks client with insufficient permissions message\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message).to.include(\"insufficient permissions\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Create Gig (Failure - Invalid Input)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{json_web_token_0qeb}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "POST",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"title\": \"Bad\",\r\n  \"description\": \"Too short\",\r\n  \"category\": \"FakeCategory\",\r\n  \"price\": -50.00,\r\n  \"deliveryTimeDays\": 200\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 400 Bad Request on invalid gig payload\", function () {",
+                                    "    pm.response.to.have.status(400);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response details validation errors array\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.false;",
+                                    "    pm.expect(jsonData.errors).to.be.an(\"array\");",
+                                    "    pm.expect(jsonData.errors.length).to.be.greaterThan(0);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get All Gigs (Marketplace Browsing)",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Public marketplace returns active gigs array\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                                    "    pm.expect(jsonData).to.have.property(\"count\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get My Gigs (Freelancer Portfolio)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{json_web_token_0qeb}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs/my-gigs",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs",
+                                "my-gigs"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Returns portfolio of gigs for authenticated freelancer\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data).to.be.an(\"array\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Get Single Gig by ID",
+                    "request": {
+                        "auth": {
+                            "type": "noauth"
+                        },
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs/{{created_gig_id}}",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs",
+                                "{{created_gig_id}}"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Returns gig details with populated freelancer\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data).to.have.property(\"_id\");",
+                                    "    pm.expect(jsonData.data).to.have.property(\"title\");",
+                                    "    pm.expect(jsonData.data.freelancer).to.be.an(\"object\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Update Gig (Failure - Non-Owner RBAC)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{auth_secret_15ef}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"price\": 500.00\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs/{{created_gig_id}}",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs",
+                                "{{created_gig_id}}"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 403 Forbidden for non-owner\", function () {",
+                                    "    pm.response.to.have.status(403);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Response rejects unauthorized modification\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.message.toLowerCase()).to.include(\"forbidden\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {"name":"Update Gig (Failure - Other Freelancer)","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{freelancer2_token}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/gigs/{{created_gig_id}}","body":{"mode":"raw","raw":"{\"title\":\"Hijacked title\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); }); pm.test(\"A different freelancer cannot change someone else's gig\", function () { const body = pm.response.json(); pm.expect(body.success).to.eql(false); pm.expect(body.message).to.include(\"do not have permission\"); });"]}}]},
+                {
+                    "name": "Update Gig (Success - Owner)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{json_web_token_0qeb}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "PUT",
+                        "header": [],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\r\n  \"price\": 4200.00,\r\n  \"deliveryTimeDays\": 5\r\n}\r\n",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs/{{created_gig_id}}",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs",
+                                "{{created_gig_id}}"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Gig fields successfully updated by owner\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.data.price).to.eql(4200);",
+                                    "    pm.expect(jsonData.data.deliveryTimeDays).to.eql(5);",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "Delete Gig (Success - Owner)",
+                    "request": {
+                        "auth": {
+                            "type": "bearer",
+                            "bearer": [
+                                {
+                                    "key": "token",
+                                    "value": "{{json_web_token_0qeb}}",
+                                    "type": "string"
+                                }
+                            ]
+                        },
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "https://localhost:3000/api/gigs/{{gig_to_delete_id}}",
+                            "protocol": "https",
+                            "host": [
+                                "localhost"
+                            ],
+                            "port": "3000",
+                            "path": [
+                                "api",
+                                "gigs",
+                                "{{gig_to_delete_id}}"
+                            ]
+                        }
+                    },
+                    "response": [],
+                    "event": [
+                        {
+                            "listen": "prerequest",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "// Dynamically create a disposable gig specifically to test delete functionality",
+                                    "pm.sendRequest({",
+                                    "    url: \"https://localhost:3000/api/gigs\",",
+                                    "    method: \"POST\",",
+                                    "    header: {",
+                                    "        \"Content-Type\": \"application/json\",",
+                                    "        \"Authorization\": `Bearer ${pm.collectionVariables.get(\"json_web_token_0qeb\")}`",
+                                    "    },",
+                                    "    body: {",
+                                    "        mode: \"raw\",",
+                                    "        raw: JSON.stringify({",
+                                    "            title: \"Disposable Temporary Gig Listing\",",
+                                    "            description: \"This gig listing is created solely for deletion testing in Postman.\",",
+                                    "            category: \"Other\",",
+                                    "            price: 500,",
+                                    "            deliveryTimeDays: 2",
+                                    "        })",
+                                    "    }",
+                                    "}, function (err, res) {",
+                                    "    if (!err && res.code === 201) {",
+                                    "        var body = res.json();",
+                                    "        pm.collectionVariables.set(\"gig_to_delete_id\", body.data._id);",
+                                    "    }",
+                                    "});"
+                                ]
+                            }
+                        },
+                        {
+                            "listen": "test",
+                            "script": {
+                                "type": "text/javascript",
+                                "exec": [
+                                    "pm.test(\"Status code is 200 OK\", function () {",
+                                    "    pm.response.to.have.status(200);",
+                                    "});",
+                                    "",
+                                    "pm.test(\"Gig successfully deleted by owner\", function () {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.expect(jsonData.success).to.be.true;",
+                                    "    pm.expect(jsonData.message).to.include(\"deleted successfully\");",
+                                    "});"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "Booking Requests",
+            "item": [
+                {"name":"Login Second Client Success","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/login","body":{"mode":"raw","raw":"{\"email\":\"{{client2_email}}\",\"password\":\"{{password}}\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.collectionVariables.set(\"token_client2\", pm.response.json().token);"]}}]},
+                {"name":"Create Booking (Failure - Freelancer Forbidden)","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings","body":{"mode":"raw","raw":"{\"gigId\":\"{{created_gig_id}}\",\"requirements\":\"Booking made by the automated API tests.\",\"paymentMethod\":\"simulated_eft\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Create Booking Success","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings","body":{"mode":"raw","raw":"{\"gigId\":\"{{created_gig_id}}\",\"requirements\":\"Booking made by the automated API tests.\",\"paymentMethod\":\"simulated_eft\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); }); const payload = pm.response.json().data; pm.test(\"Booking is confirmed and paid\", function () { pm.expect(payload.booking.status).to.eql(\"confirmed\"); pm.expect(payload.transaction.status).to.eql(\"completed\"); }); pm.collectionVariables.set(\"booking_id\", payload.booking._id); pm.collectionVariables.set(\"transaction_id\", payload.transaction._id);"]}}]},
+                {"name":"Get Booking (Failure - Other Client)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{token_client2}}"}],"url":"https://localhost:3000/api/bookings/{{booking_id}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Get Booking Success (Admin)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/bookings/{{booking_id}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"An admin can read a booking they are not part of\", function () { pm.expect(pm.response.json().data.booking._id).to.eql(pm.collectionVariables.get(\"booking_id\")); });"]}}]},
+                {"name":"Start Work Success","request":{"method":"PATCH","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings/{{booking_id}}/status","body":{"mode":"raw","raw":"{\"status\":\"in_progress\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"]}}]},
+                {"name":"Cancel Started Work (Failure - Client)","request":{"method":"PATCH","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings/{{booking_id}}/status","body":{"mode":"raw","raw":"{\"status\":\"cancelled\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Complete Booking Success","request":{"method":"PATCH","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings/{{booking_id}}/status","body":{"mode":"raw","raw":"{\"status\":\"completed\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"]}}]}
+            ]
+        },
+        {
+            "name": "Transaction Requests",
+            "item": [
+                {"name":"Income Summary Success (Freelancer)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"}],"url":"https://localhost:3000/api/transactions/income-summary"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"The booking is counted, in ZAR\", function () { const body = pm.response.json().data; pm.expect(body.totalIncome).to.be.above(0); pm.expect(body.currency).to.eql(\"ZAR\"); });"]}}]},
+                {"name":"Income Summary (Failure - Client Forbidden)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"}],"url":"https://localhost:3000/api/transactions/income-summary"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Income Summary Success (Admin Platform Wide)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/transactions/income-summary"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"The admin sees another member's transaction\", function () { const ids = pm.response.json().data.transactions.map(function (t) { return t._id; }); pm.expect(ids).to.include(pm.collectionVariables.get(\"transaction_id\")); });"]}}]},
+                {"name":"Tax Estimate Success (Freelancer)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"}],"url":"https://localhost:3000/api/transactions/tax-estimate","description":"Estimates the freelancer's income tax for the current SARS tax year (for example the 2027 tax year, 1 March 2026 – 28 February 2027) from completed payments only, using the SARS individuals' tax table, with plain language insights. Reference: South African Revenue Service, 2026. Rates of tax for individuals. https://www.sars.gov.za/tax-rates/income-tax/rates-of-tax-for-individuals/ [Accessed 6 November 2026]."},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); const estimate = pm.response.json().data; pm.test(\"Counts this tax year's completed income, in ZAR\", function () { pm.expect(estimate.income).to.be.at.least(3500); pm.expect(estimate.paymentCount).to.be.at.least(1); pm.expect(estimate.currency).to.eql(\"ZAR\"); }); pm.test(\"A small income is below the tax threshold, so no tax is owed\", function () { pm.expect(estimate.belowThreshold).to.eql(true); pm.expect(estimate.tax).to.eql(0); pm.expect(estimate.afterTax).to.eql(estimate.income); }); pm.test(\"The tax year and the rates used are reported\", function () { pm.expect(estimate.taxYear.label).to.include(\"tax year\"); pm.expect(estimate.taxYear.startsOn).to.be.a(\"string\"); pm.expect(estimate.rates.label).to.be.a(\"string\"); }); pm.test(\"Insights are included\", function () { const insights = estimate.insights; pm.expect(insights.projectedAnnualIncome).to.be.a(\"number\"); pm.expect(insights.setAsidePercent).to.eql(0); pm.expect(insights.threshold.progressPercent).to.be.above(0); pm.expect(insights.threshold.reached).to.eql(false); }); pm.test(\"It says it is an estimate, not tax advice\", function () { pm.expect(estimate.disclaimer).to.include(\"not tax advice\"); });"]}}]},
+                {"name":"Tax Estimate (Failure - Client Forbidden)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"}],"url":"https://localhost:3000/api/transactions/tax-estimate"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Tax Estimate (Failure - Admin Forbidden)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/transactions/tax-estimate"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Tax Estimate (Failure - No Token)","request":{"method":"GET","header":[],"url":"https://localhost:3000/api/transactions/tax-estimate"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"]}}]},
+                {"name":"Audit Events Success (Admin)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/admin/audit-events","description":"Lists the stored security events (logins, lockouts, password and two-factor changes), newest first, for admins only. Each event shows the username and role of the account, never its email address. Reference: OWASP Foundation, 2026. Logging Cheat Sheet. https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html [Accessed 7 November 2026]."},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); const body = pm.response.json(); pm.test(\"A page of events is returned with the paging details\", function () { pm.expect(body.success).to.eql(true); pm.expect(body.data).to.be.an(\"array\"); pm.expect(body.total).to.be.at.least(1); pm.expect(body.page).to.eql(1); pm.expect(body.pages).to.be.at.least(1); }); pm.test(\"Each event has a type, an outcome and a time\", function () { body.data.forEach(function (event) { pm.expect(event.type).to.be.a(\"string\"); pm.expect([\"success\", \"failure\"]).to.include(event.outcome); pm.expect(event.createdAt).to.be.a(\"string\"); }); }); pm.test(\"No email address is exposed, only a username and role\", function () { pm.expect(JSON.stringify(body)).to.not.include(\"@\"); }); pm.test(\"The newest event comes first\", function () { for (let i = 1; i < body.data.length; i += 1) { pm.expect(new Date(body.data[i - 1].createdAt).getTime()).to.be.at.least(new Date(body.data[i].createdAt).getTime()); } });"]}}]},
+                {"name":"Audit Events Filtered By Type (Admin)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/admin/audit-events?type=login&limit=5"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); const body = pm.response.json(); pm.test(\"Only login events are returned, at most the page size\", function () { pm.expect(body.data.length).to.be.at.most(5); body.data.forEach(function (event) { pm.expect(event.type).to.eql(\"login\"); }); });"]}}]},
+                {"name":"Audit Events (Failure - Unknown Type)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{admin_token}}"}],"url":"https://localhost:3000/api/admin/audit-events?type=drop_everything"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); }); pm.test(\"The unknown type is rejected with a message\", function () { pm.expect(pm.response.json().success).to.eql(false); pm.expect(pm.response.json().message).to.be.a(\"string\"); });"]}}]},
+                {"name":"Audit Events (Failure - Client Forbidden)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"}],"url":"https://localhost:3000/api/admin/audit-events"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Audit Events (Failure - No Token)","request":{"method":"GET","header":[],"url":"https://localhost:3000/api/admin/audit-events"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"]}}]},
+                {"name":"Get Transaction (Failure - Other Client)","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{token_client2}}"}],"url":"https://localhost:3000/api/transactions/{{transaction_id}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 403\", function () { pm.response.to.have.status(403); });"]}}]},
+                {"name":"Second Booking Success","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/bookings","body":{"mode":"raw","raw":"{\"gigId\":\"{{created_gig_id}}\",\"requirements\":\"Booking made by the automated API tests.\",\"paymentMethod\":\"simulated_eft\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); }); pm.collectionVariables.set(\"booking2_id\", pm.response.json().data.booking._id); pm.collectionVariables.set(\"transaction2_id\", pm.response.json().data.transaction._id);"]}}]},
+                {"name":"Cancel Booking Success (Owner)","request":{"method":"DELETE","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"}],"url":"https://localhost:3000/api/bookings/{{booking2_id}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"]}}]},
+                {"name":"Cancelled Booking Is Refunded Success","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0gs0}}"}],"url":"https://localhost:3000/api/transactions/{{transaction2_id}}"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"Transaction is refunded\", function () { pm.expect(pm.response.json().data.status).to.eql(\"refunded\"); });"]}}]}
+            ]
+        },
+        {
+            "name": "Account Requests",
+            "item": [
+                {"name":"Save Profile With Photo Success","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/users/me/profile","body":{"mode":"raw","raw":"{\"headline\":\"Full-stack developer\",\"location\":\"Cape Town, South Africa\",\"website\":\"https://example.com\",\"avatar\":\"data:image/png;base64,iVBORw0KGgoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=\",\"visible\":true,\"role\":\"admin\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });"]}}]},
+                {"name":"Profile Link (Failure - javascript:)","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{json_web_token_0qeb}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/users/me/profile","body":{"mode":"raw","raw":"{\"website\":\"javascript:alert(1)\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"]}}]},
+                {"name":"Change Password Success","request":{"method":"PUT","header":[{"key":"Authorization","value":"Bearer {{aged_pw_token}}"},{"key":"Content-Type","value":"application/json"}],"url":"https://localhost:3000/api/auth/password","body":{"mode":"raw","raw":"{\"currentPassword\":\"{{password}}\",\"newPassword\":\"{{changed_password}}\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"A fresh token is returned\", function () { pm.expect(pm.response.json().token).to.be.a(\"string\"); });"]}}]},
+                {"name":"Old Token After Password Change Failure","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{aged_pw_token}}"}],"url":"https://localhost:3000/api/auth/profile"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 401\", function () { pm.response.to.have.status(401); });"]}}]}
+            ]
+        },
+        {
+            "name": "Security Requests",
+            "item": [
+                {"name":"Security Headers Success","request":{"method":"GET","header":[],"url":"https://localhost:3000/api/health"},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); }); pm.test(\"CSP, framing, sniffing and HSTS protections are set\", function () { pm.expect(pm.response.headers.get(\"Content-Security-Policy\")).to.include(\"default-src 'none'\"); pm.expect(pm.response.headers.get(\"X-Frame-Options\")).to.eql(\"DENY\"); pm.expect(pm.response.headers.get(\"X-Content-Type-Options\")).to.eql(\"nosniff\"); pm.expect(pm.response.headers.get(\"Strict-Transport-Security\")).to.include(\"max-age=\"); });"]}}]},
+                {"name":"Login Before Rate Limit Failure","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"{{limited_url}}/auth/login","body":{"mode":"raw","raw":"{\"email\":\"max@example.com\",\"password\":\"Wrong#Pass1234\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 400\", function () { pm.response.to.have.status(400); });"]}}]},
+                {"name":"Login Rate Limited Failure","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"url":"{{limited_url}}/auth/login","body":{"mode":"raw","raw":"{\"email\":\"max@example.com\",\"password\":\"Wrong#Pass1234\"}"}},"event":[{"listen":"test","script":{"type":"text/javascript","exec":["pm.test(\"Status code is 429\", function () { pm.response.to.have.status(429); }); pm.test(\"Clear message, retry time and Retry-After header\", function () { const body = pm.response.json(); pm.expect(body.message).to.include(\"Too many\"); pm.expect(body.retryAfterSeconds).to.be.above(0); pm.response.to.have.header(\"Retry-After\"); });"]}}]}
+            ]
+        }
+    ],
+    "variable": [
+        {
+            "key": "json_web_token_0gs0",
+            "secret": true
+        },
+        {
+            "key": "bearer_token_0upc",
+            "secret": true
+        },
+        {
+            "key": "bearer_token_01pc",
+            "secret": true
+        },
+        {
+            "key": "json_web_token_0qeb",
+            "secret": true
+        },
+        {
+            "key": "auth_secret_15ef",
+            "secret": true
+        },
+        {
+            "key": "created_gig_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "gig_to_delete_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "dynamic_freelancer_email",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "freelancer_user_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "client_user_id",
+            "value": "",
+            "type": "string"
+        },
+        {
+            "key": "limited_url",
+            "value": "https://localhost:3097/api"
+        }
+    ]
+}

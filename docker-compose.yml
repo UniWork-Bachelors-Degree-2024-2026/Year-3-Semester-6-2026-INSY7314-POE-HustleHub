@@ -1,0 +1,89 @@
+name: hustlehub_stack
+
+# Configure logging for the containers
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  backend:
+    build: ./backend # Uses the Dockerfile in the backend folder
+    image: hustlehub-backend
+    restart: unless-stopped
+    init: true # Passes through process signals and error exit codes from Node.js
+    env_file:
+      - ./backend/.env
+    environment:
+      NODE_EXTRA_CA_CERTS: /ca.crt # Instructs Node to trust our local Root CA
+      # Origins allowed by CORS (comma separated). Set ALLOWED_ORIGINS in a root .env file to change it.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-https://localhost:5173}
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mount SSL certificates into root for HTTPS communication
+      - ./cert.crt:/cert.crt:ro
+      - ./cert.key:/cert.key:ro
+      - ./ca.crt:/ca.crt:ro
+      # Map logs folder inside container to local machine for persistence and monitoring
+      - ./backend/logs:/app/logs
+    extra_hosts:
+      # Allows the container to connect to MongoDB running locally on the host machine if needed
+      - "host.docker.internal:host-gateway"
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "require('https').get('https://localhost:3000/api/health', r => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    security_opt:
+      # Prevent privilege escalation (no-new-privileges)
+      - no-new-privileges:true
+    logging: *default-logging
+
+  frontend:
+    build:
+      context: ./frontend # Uses the multi-stage Dockerfile in frontend folder
+      args:
+        # Baked into the React build, so changing it needs a rebuild: docker compose up --build
+        VITE_API_URL: ${VITE_API_URL:-https://localhost:3000/api}
+    image: hustlehub-frontend
+    restart: unless-stopped
+    # Wait for backend to be healthy before starting frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    environment:
+      # Filled into the Nginx Content Security Policy when the container starts
+      API_ORIGIN: ${API_ORIGIN:-https://localhost:3000}
+    ports:
+      - "5173:5173"
+    volumes:
+      # Mount SSL certificates for Nginx HTTPS serving
+      - ./cert.crt:/etc/nginx/certs/cert.crt:ro
+      - ./cert.key:/etc/nginx/certs/cert.key:ro
+    networks:
+      - app-network
+    healthcheck:
+      test:
+        ["CMD", "curl", "-fsk", "-o", "/dev/null", "https://localhost:5173/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    security_opt:
+      - no-new-privileges:true
+    logging: *default-logging
+
+networks:
+  app-network:
+    driver: bridge
